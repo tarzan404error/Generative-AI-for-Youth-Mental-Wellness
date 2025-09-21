@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Bro grammar — Generative AI for Youth Mental Wellness (Prototype)</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+<body>
+<div class="app" role="application" aria-label="Prototype NeuroFit360">
+  <header>
+    <div class="brand">
+      <div class="logo">BG</div>
+      <div class="title">
+        <h1>Bro grammar — Youth Mental Wellness</h1>
+        <p>Team Leader: Ankush Raj · Problem: Generative AI for Youth Mental Wellness</p>
+      </div>
+    </div>
+    <div class="score card" style="padding:10px 14px;">
+      <div>
+        <div class="muted small">Brain & Body Score</div>
+        <div class="big" id="bbs">--</div>
+      </div>
+      <div style="margin-left:12px;">
+        <button class="btn" id="refreshBBS">Recompute</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="card" aria-label="Navigation">
+    <div class="team"><strong>Team:</strong> Bro grammar</div>
+    <div class="muted small" style="margin-bottom:8px">Modules</div>
+    <div class="menu" role="tablist" aria-orientation="vertical">
+      <button class="active" data-panel="dashboard" role="tab">Dashboard</button>
+      <button data-panel="neurogym" role="tab">NeuroGym (Memory)</button>
+      <button data-panel="posturepal" role="tab">PosturePal</button>
+      <button data-panel="fallshield" role="tab">FallShield (Balance)</button>
+      <button data-panel="moodsync" role="tab">MoodSync</button>
+      <button data-panel="about" role="tab">About / Tech</button>
+    </div>
+  </nav>
+
+  <main class="panel" id="mainPanel" tabindex="0">
+    <!-- Dashboard -->
+    <section id="dashboard">
+      <div class="grid">
+        <div class="card">
+          <h2>Welcome</h2>
+          <p class="small">This prototype demonstrates a full-stack style wellness experience built only with HTML/CSS/JS. Each module simulates AI/predictive behavior locally and focuses on youth mental wellness.</p>
+          <div class="row" style="margin-top:8px">
+            <div style="flex:1">
+              <div class="muted small">Weekly Summary</div>
+              <div class="log" id="summaryLog">No activity yet. Play a NeuroGym round, take a posture check, or run a FallShield test to populate data.</div>
+            </div>
+            <div style="width:220px">
+              <div class="muted small">Quick Actions</div>
+              <div style="display:flex;flex-direction:column; gap:8px; margin-top:8px">
+                <button class="btn" onclick="goto('neurogym')">Start NeuroGym</button>
+                <button class="btn" onclick="goto('posturepal')">Start Posture Check</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Today’s Focus</h2>
+          <p class="small">AI suggests shorter bursts for improved attention and mood.</p>
+          <div style="margin-top:8px">
+            <div class="muted small">Recommended micro-session</div>
+            <div style="margin-top:6px; font-weight:700">5-min NeuroGym + 1-min neck stretch</div>
+            <div style="margin-top:12px" class="flex">
+              <button class="btn" onclick="startNeuroGymQuick()">Start Now</button>
+              <button class="btn" onclick="logEvent('Did a 1-min breathing break')">Log Break</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NeuroGym -->
+    <section id="neurogym" style="display:none">
+      <div class="card">
+        <h2>NeuroGym — Memory & Movement</h2>
+        <p class="small">Memorize the sequence, then perform the quick movement. This trains working memory + body coordination — shown to boost focus.</p>
+        <div style="margin-top:8px" class="grid">
+          <div>
+            <div class="muted small">Round difficulty</div>
+            <input id="memDifficulty" type="range" min="3" max="8" value="5" />
+            <div style="margin-top:10px"><button class="btn" onclick="startMemory()">Generate Sequence</button></div>
+            <div style="margin-top:12px">
+              <div class="muted small">Sequence</div>
+              <div id="sequence" class="log">—</div>
+            </div>
+            <div style="margin-top:10px">
+              <div class="muted small">Enter recall (space-separated)</div>
+              <input id="recallInput" placeholder="e.g. red blue green" style="width:100%; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.03); background:transparent; color:inherit" />
+              <div style="margin-top:8px; display:flex; gap:8px">
+                <button class="btn" onclick="submitRecall()">Submit</button>
+                <button class="btn" onclick="hintMemory()">Hint</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="muted small">Mini movement</div>
+            <p class="small">Perform the suggested movement for 30 seconds (or simulate by clicking Start).</p>
+            <div style="margin-top:8px" id="movementArea">
+              <div id="movementTip" style="padding:12px; border-radius:10px; background:#061b25">—</div>
+              <div style="margin-top:8px">
+                <button class="btn" onclick="startMovement()">Start Movement (30s)</button>
+                <div id="movementTimer" style="margin-top:8px" class="muted small">Not started</div>
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <div class="muted small">Game log</div>
+              <div id="gameLog" class="log">No rounds yet.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PosturePal -->
+    <section id="posturepal" style="display:none">
+      <div class="card">
+        <h2>PosturePal — Micro-stretch reminders</h2>
+        <p class="small">Simulated posture detection: allow camera (optional) or move the slider to simulate slouch angle. Micro-break suggestions are auto-generated.</p>
+
+        <div style="display:flex; gap:14px; align-items:flex-start">
+          <div style="flex:1">
+            <div class="muted small">Simulated neck tilt (°)</div>
+            <input id="tiltRange" type="range" min="0" max="60" value="10" />
+            <div style="margin-top:10px" class="row"><strong id="tiltVal">10°</strong><div class="muted small">— lower is better</div></div>
+            <div style="margin-top:10px" class="row">
+              <button class="btn" onclick="checkPosture()">Check Posture</button>
+              <button class="btn" onclick="toggleCamera()">Use Camera (optional)</button>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="muted small">Recommendation</div>
+              <div id="postureRec" style="padding:10px; border-radius:8px; background:#061b25">—</div>
+            </div>
+          </div>
+
+          <div style="width:360px">
+            <div class="muted small">Live preview (camera)</div>
+            <video id="cameraPreview" width="340" height="200" style="background:#03121a; border-radius:8px" autoplay playsinline></video>
+            <div class="muted small" style="margin-top:8px">Micro-stretch Examples</div>
+            <div style="display:flex; gap:8px; margin-top:6px">
+              <div style="flex:1; background:#041b2a; padding:8px; border-radius:8px; font-size:13px">Neck rotations</div>
+              <div style="flex:1; background:#041b2a; padding:8px; border-radius:8px; font-size:13px">Shoulder rolls</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FallShield -->
+    <section id="fallshield" style="display:none">
+      <div class="card">
+        <h2>FallShield — Balance check</h2>
+        <p class="small">Simple balance test: hold the button (or spacebar) to simulate standing on one foot. Score measured by duration and stability.</p>
+        <div style="margin-top:8px; display:grid; grid-template-columns: 1fr 260px; gap:12px">
+          <div>
+            <div class="muted small">Start test</div>
+            <div style="margin-top:8px">
+              <button class="btn" id="balanceBtn" onmousedown="startBalance()" onmouseup="endBalance()" ontouchstart="startBalance()" ontouchend="endBalance()">Hold to Balance</button>
+              <div style="margin-top:8px" class="muted small">Or press and hold <code>Space</code></div>
+            </div>
+            <div style="margin-top:12px">
+              <div class="muted small">Result</div>
+              <div id="balanceResult" class="log">No test yet.</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="muted small">Risk meter</div>
+            <div id="riskMeter" style="height:120px; display:flex; align-items:center; justify-content:center; border-radius:8px; background:#041826; font-size:18px; margin-top:8px">—</div>
+            <div style="margin-top:12px">
+              <button class="btn" onclick="simulateFallRisk()">Simulate Trend → High Risk</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MoodSync -->
+    <section id="moodsync" style="display:none">
+      <div class="card">
+        <h2>MoodSync — Quick emotional check</h2>
+        <p class="small">Tell us how you feel (typing or voice). The local sentiment matcher gives adaptive suggestions (calming, energizing, social).</p>
+        <div style="display:flex; gap:12px">
+          <div style="flex:1">
+            <div class="muted small">Text mood</div>
+            <input id="moodText" placeholder="I feel stressed about exams..." style="width:100%; padding:10px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.03)" />
+            <div style="margin-top:8px; display:flex; gap:8px">
+              <button class="btn" onclick="analyzeMood()">Analyze</button>
+              <button class="btn" id="startVoiceBtn" onclick="startVoice()">Voice Input</button>
+            </div>
+            <div style="margin-top:12px">
+              <div class="muted small">Detected mood</div>
+              <div id="moodOut" class="log">—</div>
+            </div>
+          </div>
+
+          <div style="width:320px">
+            <div class="muted small">Adaptive suggestion</div>
+            <div id="moodSuggestion" style="padding:12px; border-radius:8px; background:#061b25; margin-top:8px">—</div>
+            <div style="margin-top:12px">
+              <div class="muted small">Micro-session</div>
+              <div style="display:flex; gap:8px; margin-top:6px">
+                <button class="btn" onclick="startBreathing()">2-min Breathing</button>
+                <button class="btn" onclick="startLightYoga()">1-min Stretch</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About / Tech -->
+    <section id="about" style="display:none">
+      <div class="card">
+        <h2>Prototype details & Technologies</h2>
+        <p class="small">This client-only prototype simulates a fullstack experience with local logic. It demonstrates the workflows and UI/UX for a generative AI mental wellness product targeted at youth.</p>
+        <div style="margin-top:12px">
+          <strong>Tech used:</strong>
+          <ul class="muted small">
+            <li>HTML, CSS, JavaScript (ES6)</li>
+            <li>Web Speech API (optional voice input)</li>
+            <li>MediaDevices.getUserMedia (optional camera preview)</li>
+            <li>Client-side heuristics simulating sentiment & predictive models</li>
+          </ul>
+        </div>
+        <div style="margin-top:10px">
+          <strong>How this maps to fullstack:</strong>
+          <p class="small muted">Replace local heuristics with LLM/NLP models on the server or edge (e.g., hosted LLMs, transformer-based sentiment models). Use WebSockets for real-time posture alerts and wearable integration for live telemetry.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>Prototype (UI-only) • Team: Bro grammar • Leader: Ankush Raj</footer>
+  </main>
+</div>
+
+<script src="js/app.js"></script>
+
+/* Summary log updater */
+function logEvent(text){
+  const t = new Date().toLocaleString();
+  state.events.unshift(`${t}: ${text}`);
+  document.getElementById('summaryLog').textContent = state.events.slice(0,20).join('\\n');
+  recomputeBBS();
+}
+
+/* Brain & Body Score recompute */
+function recomputeBBS(){
+  // simple heuristic: starts at 50, += activity bonuses - penalty for tilt/risk
+  let score = 50;
+  score += Math.min(20, state.events.filter(e=>/NeuroGym|memory|breathing|movement/i.test(e)).length * 4);
+  score += Math.max(-10, 10 - (parseInt(document.getElementById('tiltRange')?.value || 10)));
+  // risk from balance test
+  if(state.lastBalance && state.lastBalance.duration < 2) score -= 15;
+  state.bbs = Math.max(10, Math.min(99, Math.round(score)));
+  document.getElementById('bbs').textContent = state.bbs;
+}
+document.getElementById('refreshBBS').addEventListener('click', recomputeBBS);
+
+/* -------------------------
+   NeuroGym (memory + movement)
+   ------------------------- */
+const COLORS = ['red','blue','green','yellow','purple','orange','teal','pink'];
+function startMemory(){
+  const n = parseInt(document.getElementById('memDifficulty').value,10);
+  const seq = [];
+  for(let i=0;i<n;i++) seq.push(COLORS[Math.floor(Math.random()*COLORS.length)]);
+  state.memorySeq = seq;
+  document.getElementById('sequence').textContent = seq.join(' ');
+  document.getElementById('gameLog').textContent = `Generated sequence of ${n} items. Try to recall and submit.`;
+  logEvent(`NeuroGym: generated sequence (${n})`);
+  // pick movement
+  const moves = ['30s squats','30s shoulder rolls','30s standing stretch','30s gentle march'];
+  state.movementTip = moves[Math.floor(Math.random()*moves.length)];
+  document.getElementById('movementTip').textContent = state.movementTip;
+}
+function hintMemory(){
+  if(!state.memorySeq.length) return alert('Generate sequence first.');
+  const idx = Math.floor(Math.random()*state.memorySeq.length);
+  alert('Hint: item at position ' + (idx+1) + ' is ' + state.memorySeq[idx]);
+}
+function submitRecall(){
+  const input = document.getElementById('recallInput').value.trim().toLowerCase();
+  if(!state.memorySeq.length) return alert('Generate sequence first.');
+  if(!input) return alert('Type your recall (space separated).');
+  const provided = input.split(/\\s+/);
+  let correct = 0;
+  for(let i=0;i<Math.min(provided.length, state.memorySeq.length); i++){
+    if(provided[i] === state.memorySeq[i]) correct++;
+  }
+  const accuracy = Math.round(100 * correct / state.memorySeq.length);
+  document.getElementById('gameLog').textContent = `Recall accuracy: ${accuracy}% (${correct}/${state.memorySeq.length})`;
+  logEvent(`NeuroGym result: ${accuracy}%`);
+  recomputeBBS();
+}
+function startMovement(){
+  if(state.movementTimer) { clearInterval(state.movementTimer); state.movementTimer = null; document.getElementById('movementTimer').textContent = 'Stopped'; return; }
+  let t=30;
+  document.getElementById('movementTimer').textContent = `Time left: ${t}s`;
+  state.movementTimer = setInterval(()=> {
+    t--;
+    document.getElementById('movementTimer').textContent = `Time left: ${t}s`;
+    if(t<=0){ clearInterval(state.movementTimer); state.movementTimer=null; document.getElementById('movementTimer').textContent='Done'; logEvent('Completed mini movement: '+state.movementTip); recomputeBBS(); }
+  },1000);
+}
+function startNeuroGymQuick(){ goto('neurogym'); startMemory(); setTimeout(()=>startMovement(),800); }
+
+/* -------------------------
+   PosturePal
+   ------------------------- */
+const tiltSlider = document.getElementById('tiltRange');
+const tiltVal = document.getElementById('tiltVal');
+tiltSlider.addEventListener('input', ()=>{ tiltVal.textContent = tiltSlider.value + '°'; });
+function checkPosture(){
+  const val = parseInt(tiltSlider.value,10);
+  let rec = '';
+  if(val <= 15) { rec = 'Good posture — keep up! Try 30-60s stretches every hour.'; }
+  else if(val <= 30) { rec = 'Mild slouch detected. Do 30s neck rotations + 30s shoulder rolls.'; }
+  else { rec = 'High forward tilt detected. Stand up, perform 60s posture reset: chin tucks + wall angels.'; }
+  document.getElementById('postureRec').textContent = rec;
+  logEvent('Posture check: ' + val + '° → ' + rec);
+  recomputeBBS();
+}
+
+/* Camera preview (optional) */
+async function toggleCamera(){
+  if(state.cameraOn){ stopCamera(); return; }
+  try{
+    const s = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    document.getElementById('cameraPreview').srcObject = s;
+    state.cameraOn=true; state.videoStream=s;
+    document.querySelector('button[onclick="toggleCamera()"]').textContent = 'Stop Camera';
+    logEvent('Camera on for posture preview');
+  }catch(e){ alert('Camera unavailable or permission denied.'); }
+}
+function stopCamera(){
+  if(state.videoStream){ state.videoStream.getTracks().forEach(t=>t.stop()); state.videoStream=null; }
+  document.getElementById('cameraPreview').srcObject = null;
+  state.cameraOn=false;
+  document.querySelector('button[onclick="toggleCamera()"]').textContent = 'Use Camera (optional)';
+}
+
+/* -------------------------
+   FallShield (balance)
+   ------------------------- */
+function startBalance(){
+  state.balanceStart = performance.now();
+  document.getElementById('balanceResult').textContent = 'Balancing...';
+  window.addEventListener('keydown', spaceHold);
+  window.addEventListener('keyup', spaceRelease);
+}
+function endBalance(){
+  if(!state.balanceStart) return;
+  const dur = (performance.now() - state.balanceStart)/1000;
+  state.lastBalance = {duration: dur};
+  document.getElementById('balanceResult').textContent = `Held for ${dur.toFixed(2)}s`;
+  state.balanceStart = null;
+  window.removeEventListener('keydown', spaceHold);
+  window.removeEventListener('keyup', spaceRelease);
+  logEvent('FallShield test: ' + dur.toFixed(2) + 's');
+  updateRiskMeter();
+  recomputeBBS();
+}
+let spaceDown=false;
+function spaceHold(e){
+  if(e.code === 'Space' && !spaceDown){ spaceDown=true; if(!state.balanceStart) startBalance(); }
+}
+function spaceRelease(e){
+  if(e.code === 'Space' && spaceDown){ spaceDown=false; endBalance(); }
+}
+function simulateFallRisk(){
+  // worsen risk: add a few short balance events
+  state.lastBalance = {duration: 0.5};
+  updateRiskMeter();
+  logEvent('Simulated high fall risk');
+  recomputeBBS();
+}
+function updateRiskMeter(){
+  const el = document.getElementById('riskMeter');
+  const dur = state.lastBalance ? state.lastBalance.duration : 999;
+  if(dur >= 10) { el.textContent = 'Low risk'; el.style.background = 'linear-gradient(90deg, rgba(34,197,94,0.12), transparent)'; }
+  else if(dur >= 3) { el.textContent = 'Moderate risk'; el.style.background = 'linear-gradient(90deg, rgba(250,204,21,0.08), transparent)'; }
+  else { el.textContent = 'High risk'; el.style.background = 'linear-gradient(90deg, rgba(239,68,68,0.06), transparent)'; }
+}
+
+/* -------------------------
+   MoodSync (simple sentiment)
+   ------------------------- */
+function analyzeMood(){
+  const txt = document.getElementById('moodText').value.trim();
+  if(!txt) return alert('Type your mood description or try voice input.');
+  const mood = simpleSentiment(txt);
+  document.getElementById('moodOut').textContent = `Detected: ${mood.tag} (score ${mood.score}) — ${mood.note}`;
+  adaptSuggestion(mood);
+  logEvent('MoodSync: ' + mood.tag);
+  recomputeBBS();
+}
+function simpleSentiment(text){
+  // tiny, local heuristic: count positive / negative words
+  const pos = ['happy','good','great','calm','relaxed','fine','ok','energetic','excited','confident'];
+  const neg = ['sad','stressed','anxious','angry','tired','burnout','depressed','lonely','scared'];
+  const t = text.toLowerCase();
+  let score = 0;
+  pos.forEach(w=> { if(t.includes(w)) score += 2; });
+  neg.forEach(w=> { if(t.includes(w)) score -= 2; });
+  if(t.match(/sleep|insomnia/)) score -= 1;
+  const tag = score > 1 ? 'positive' : score < -1 ? 'negative' : 'neutral';
+  const note = tag === 'positive' ? 'Keep doing what you do!' : tag === 'negative' ? 'Try a short breathing break.' : 'Consider a 2-min reset.';
+  return {score, tag, note};
+}
+function adaptSuggestion(mood){
+  const sug = document.getElementById('moodSuggestion');
+  if(mood.tag === 'positive') sug.textContent = 'Energy boost: 1-min focus game or short walk.';
+  else if(mood.tag === 'negative') sug.textContent = 'Try 2-min guided breathing and a light NeuroGym memory round.';
+  else sug.textContent = 'Micro-session: 90s stretch + 60s memory game.';
+}
+
+/* Voice input (optional) */
+function startVoice(){
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Voice recognition not supported in this browser. Use text input.');
+    return;
+  }
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const r = new Rec();
+  r.lang = 'en-US'; r.interimResults = false; r.maxAlternatives = 1;
+  r.onresult = (ev) => {
+    const spoken = ev.results[0][0].transcript;
+    document.getElementById('moodText').value = spoken;
+    analyzeMood();
+  };
+  r.onerror = (e) => { alert('Voice error: ' + e.error); };
+  r.start();
+  logEvent('Voice input started (MoodSync)');
+}
+
+/* Micro-sessions */
+function startBreathing(){
+  logEvent('Started 2-min breathing session');
+  alert('Start 2-minute breathing: 4s inhale, 6s exhale. (Simulated in prototype)');
+}
+function startLightYoga(){ logEvent('Started 1-min stretch'); alert('Perform gentle neck and shoulder stretches for 60s.'); }
+
+/* small helper to attempt camera preview if posture panel is visited */
+function updateCameraPreview(){ if(state.cameraOn && state.videoStream) return; /* do nothing unless user toggles camera */ }
+
+/* Init */
+(function init(){
+  recomputeBBS();
+  logEvent('Prototype opened');
+})();
+</script>
+</body>
+</html>
